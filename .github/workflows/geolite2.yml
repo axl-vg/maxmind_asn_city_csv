@@ -66,16 +66,20 @@ jobs:
         run: |
           cd ${{ runner.temp }}/geolite2
           echo "Downloading GeoLite2-ASN..."
-          curl -L -u "$MAXMIND_ACCOUNT_ID:$MAXMIND_LICENSE_KEY" \
-            'https://download.maxmind.com/geoip/databases/GeoLite2-ASN-CSV/download?suffix=tar.gz' \
+          curl -f -L \
+            --user "$MAXMIND_ACCOUNT_ID:$MAXMIND_LICENSE_KEY" \
+            "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN-CSV&license_key=${MAXMIND_LICENSE_KEY}&suffix=tar.gz" \
             -o GeoLite2-ASN.tar.gz
           
-          if [ ! -s GeoLite2-ASN.tar.gz ]; then
-            echo "ERROR: ASN download failed or empty"
+          # Verify it's actually a gzip file
+          file GeoLite2-ASN.tar.gz
+          if ! gzip -t GeoLite2-ASN.tar.gz 2>/dev/null; then
+            echo "ERROR: Not a valid gzip. Response was:"
+            cat GeoLite2-ASN.tar.gz
             exit 1
           fi
           echo "ASN download successful: $(du -h GeoLite2-ASN.tar.gz)"
-      
+
       - name: Download MaxMind City data
         env:
           MAXMIND_ACCOUNT_ID: ${{ secrets.MAXMIND_ACCOUNT_ID }}
@@ -83,12 +87,15 @@ jobs:
         run: |
           cd ${{ runner.temp }}/geolite2
           echo "Downloading GeoLite2-City..."
-          curl -L -u "$MAXMIND_ACCOUNT_ID:$MAXMIND_LICENSE_KEY" \
-            'https://download.maxmind.com/geoip/databases/GeoLite2-City-CSV/download?suffix=tar.gz' \
+          curl -f -L \
+            --user "$MAXMIND_ACCOUNT_ID:$MAXMIND_LICENSE_KEY" \
+            "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City-CSV&license_key=${MAXMIND_LICENSE_KEY}&suffix=tar.gz" \
             -o GeoLite2-City.tar.gz
           
-          if [ ! -s GeoLite2-City.tar.gz ]; then
-            echo "ERROR: City download failed or empty"
+          file GeoLite2-City.tar.gz
+          if ! gzip -t GeoLite2-City.tar.gz 2>/dev/null; then
+            echo "ERROR: Not a valid gzip. Response was:"
+            cat GeoLite2-City.tar.gz
             exit 1
           fi
           echo "City download successful: $(du -h GeoLite2-City.tar.gz)"
