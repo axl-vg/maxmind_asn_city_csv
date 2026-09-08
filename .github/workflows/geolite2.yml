@@ -271,8 +271,7 @@ jobs:
             # MaxMind GeoLite2 City + ASN Merged Dataset
 
             **Generated**: ${{ github.run_id }} UTC
-            **Data Date**: ${{ steps.check_update.outputs.CITY_DATE }}
-
+            
             ## File Details
             - **Lines**: ${{ steps.compress.outputs.lines }}
             - **Compressed Size**: ${{ steps.compress.outputs.compressed_size }}
