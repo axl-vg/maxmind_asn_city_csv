@@ -265,7 +265,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: ${{ env.WORK_DIR }}/maxmind-geolite2-city-asn-csv.zip
-          tag_name: geolite2-${{ steps.check_update.outputs.CITY_DATE || github.run_id }}
+          tag_name: geolite2-asn-city
           target_commitish: ${{ github.sha }}
           body: |
             # MaxMind GeoLite2 City + ASN Merged Dataset
