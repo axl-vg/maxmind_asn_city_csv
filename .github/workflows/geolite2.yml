@@ -68,12 +68,10 @@ jobs:
           cd ${{ runner.temp }}/geolite2
           echo "Downloading GeoLite2-ASN..."
           curl -f -L \
-            --user "$MAXMIND_ACCOUNT_ID:$MAXMIND_LICENSE_KEY" \
-            "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN-CSV&license_key=${MAXMIND_LICENSE_KEY}&suffix=tar.gz" \
+            -u "${MAXMIND_ACCOUNT_ID}:${MAXMIND_LICENSE_KEY}" \
+            "https://download.maxmind.com/geoip/databases/GeoLite2-ASN-CSV/download?suffix=tar.gz" \
             -o GeoLite2-ASN.tar.gz
-          
-          # Verify it's actually a gzip file
-          file GeoLite2-ASN.tar.gz
+
           if ! gzip -t GeoLite2-ASN.tar.gz 2>/dev/null; then
             echo "ERROR: Not a valid gzip. Response was:"
             cat GeoLite2-ASN.tar.gz
@@ -89,11 +87,10 @@ jobs:
           cd ${{ runner.temp }}/geolite2
           echo "Downloading GeoLite2-City..."
           curl -f -L \
-            --user "$MAXMIND_ACCOUNT_ID:$MAXMIND_LICENSE_KEY" \
-            "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City-CSV&license_key=${MAXMIND_LICENSE_KEY}&suffix=tar.gz" \
+            -u "${MAXMIND_ACCOUNT_ID}:${MAXMIND_LICENSE_KEY}" \
+            "https://download.maxmind.com/geoip/databases/GeoLite2-City-CSV/download?suffix=tar.gz" \
             -o GeoLite2-City.tar.gz
-          
-          file GeoLite2-City.tar.gz
+
           if ! gzip -t GeoLite2-City.tar.gz 2>/dev/null; then
             echo "ERROR: Not a valid gzip. Response was:"
             cat GeoLite2-City.tar.gz
