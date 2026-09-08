@@ -14,6 +14,7 @@ on:
 jobs:
   process-geolite2:
     runs-on: ubuntu-latest
+    environment: MAXMIND_ACCOUNT_ID
     
     permissions:
       contents: write
