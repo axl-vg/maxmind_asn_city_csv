@@ -37,12 +37,12 @@ jobs:
 
           CITY_MODIFIED=$(curl -sI -L \
             -u "${MAXMIND_ACCOUNT_ID}:${MAXMIND_LICENSE_KEY}" \
-            'https://download.maxmind.com/geoip/databases/GeoLite2-City-CSV/download?suffix=tar.gz' | \
+            'https://download.maxmind.com/geoip/databases/GeoLite2-City-CSV/download?suffix=zip' | \
             grep -i "Last-Modified" | cut -d' ' -f2-)
 
           ASN_MODIFIED=$(curl -sI -L \
             -u "${MAXMIND_ACCOUNT_ID}:${MAXMIND_LICENSE_KEY}" \
-            'https://download.maxmind.com/geoip/databases/GeoLite2-ASN-CSV/download?suffix=tar.gz' | \
+            'https://download.maxmind.com/geoip/databases/GeoLite2-ASN-CSV/download?suffix=zip' | \
             grep -i "Last-Modified" | cut -d' ' -f2-)
 
           echo "City data modified: $CITY_MODIFIED"
@@ -60,17 +60,18 @@ jobs:
         run: |
           cd ${{ runner.temp }}/geolite2
           echo "Downloading GeoLite2-ASN..."
-          curl -f -L \
+          curl -f -O -J -L \
             -u "${MAXMIND_ACCOUNT_ID}:${MAXMIND_LICENSE_KEY}" \
-            "https://download.maxmind.com/geoip/databases/GeoLite2-ASN-CSV/download?suffix=tar.gz" \
-            -o GeoLite2-ASN.tar.gz
+            "https://download.maxmind.com/geoip/databases/GeoLite2-ASN-CSV/download?suffix=zip"
 
-          if ! gzip -t GeoLite2-ASN.tar.gz 2>/dev/null; then
-            echo "ERROR: Not a valid gzip. Response was:"
-            cat GeoLite2-ASN.tar.gz
+          ASN_ZIP=$(ls GeoLite2-ASN-CSV_*.zip 2>/dev/null | head -1)
+          if [ -z "$ASN_ZIP" ]; then
+            echo "ERROR: ASN zip not found. Files present:"
+            ls -lah
             exit 1
           fi
-          echo "ASN download successful: $(du -h GeoLite2-ASN.tar.gz)"
+          echo "ASN download successful: $(du -h $ASN_ZIP)"
+          echo "ASN_ZIP=${{ runner.temp }}/geolite2/$ASN_ZIP" >> $GITHUB_ENV
 
       - name: Download MaxMind City data
         env:
@@ -79,23 +80,24 @@ jobs:
         run: |
           cd ${{ runner.temp }}/geolite2
           echo "Downloading GeoLite2-City..."
-          curl -f -L \
+          curl -f -O -J -L \
             -u "${MAXMIND_ACCOUNT_ID}:${MAXMIND_LICENSE_KEY}" \
-            "https://download.maxmind.com/geoip/databases/GeoLite2-City-CSV/download?suffix=tar.gz" \
-            -o GeoLite2-City.tar.gz
+            "https://download.maxmind.com/geoip/databases/GeoLite2-City-CSV/download?suffix=zip"
 
-          if ! gzip -t GeoLite2-City.tar.gz 2>/dev/null; then
-            echo "ERROR: Not a valid gzip. Response was:"
-            cat GeoLite2-City.tar.gz
+          CITY_ZIP=$(ls GeoLite2-City-CSV_*.zip 2>/dev/null | head -1)
+          if [ -z "$CITY_ZIP" ]; then
+            echo "ERROR: City zip not found. Files present:"
+            ls -lah
             exit 1
           fi
-          echo "City download successful: $(du -h GeoLite2-City.tar.gz)"
+          echo "City download successful: $(du -h $CITY_ZIP)"
+          echo "CITY_ZIP=${{ runner.temp }}/geolite2/$CITY_ZIP" >> $GITHUB_ENV
 
       - name: Extract archives
         run: |
           cd ${{ runner.temp }}/geolite2
-          tar -xzf GeoLite2-ASN.tar.gz
-          tar -xzf GeoLite2-City.tar.gz
+          unzip -q "${{ env.ASN_ZIP }}"
+          unzip -q "${{ env.CITY_ZIP }}"
 
           ASN_DIR=$(find . -maxdepth 1 -type d -name 'GeoLite2-ASN*' | head -1)
           CITY_DIR=$(find . -maxdepth 1 -type d -name 'GeoLite2-City*' | head -1)
